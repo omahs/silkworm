@@ -147,10 +147,10 @@ intx::uint256 EthashRuleSet::difficulty(uint64_t block_number, const uint64_t bl
         difficulty += one << (n - 2);
     }
 
-    static constexpr uint64_t kMinDifficulty{0x20000};
-    if (difficulty < kMinDifficulty) {
-        difficulty = kMinDifficulty;
-    }
+//    static constexpr uint64_t kMinDifficulty{0x20000};
+//    if (difficulty < kMinDifficulty) {
+//        difficulty = kMinDifficulty;
+//    }
     return difficulty;
 }
 

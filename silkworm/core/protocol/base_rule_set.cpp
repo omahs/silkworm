@@ -165,7 +165,8 @@ ValidationResult BaseRuleSet::validate_block_header(const BlockHeader& header, c
         return ValidationResult::kInvalidGasLimit;
     }
 
-    if (header.difficulty != difficulty(header, *parent)) {
+    auto a = difficulty(header, *parent);
+    if (header.difficulty != a) {
         return ValidationResult::kWrongDifficulty;
     }
 

@@ -130,6 +130,8 @@ Block StateTransition::get_block(InMemoryState& state, ChainConfig& chain_config
     parent_block.header.gas_used = parent_block.header.gas_limit / protocol::kElasticityMultiplier;
     parent_block.header.number = block.header.number - 1;
     parent_block.header.base_fee_per_gas = block.header.base_fee_per_gas;
+    parent_block.header.ommers_hash = kEmptyListHash;
+    parent_block.header.difficulty = block.header.difficulty;
     state.insert_block(parent_block, block.header.parent_hash);
 
     return block;
@@ -330,8 +332,8 @@ void StateTransition::run() {
             auto pre_txn_validation = protocol::pre_validate_transaction(txn, rev, config.chain_id, block.header.base_fee_per_gas, block.header.data_gas_price());
             auto txn_validation = processor.validate_transaction(txn);
 
-            // std::cout << "pre: " << std::endl;
-            // state->print_state_root_hash();
+//            std::cout << "pre: " << std::endl;
+//            state->print_state_root_hash();
 
             if (pre_block_validation == ValidationResult::kOk &&
                 block_validation == ValidationResult::kOk &&
@@ -340,12 +342,13 @@ void StateTransition::run() {
                 processor.execute_transaction(txn, receipt);
                 processor.evm().state().write_to_db(block.header.number);
             } else {
+                print_diagnostic_message(expectedState, expectedSubState, "Validation failed");
                 cleanup_error_block(block, processor, rev);
                 receipt.success = false;
             }
 
-            // std::cout << "post: " << std::endl;
-            // state->print_state_root_hash();
+//            std::cout << "post: " << std::endl;
+//            state->print_state_root_hash();
 
             validate_transition(receipt, expectedState, expectedSubState, *state);
         }
