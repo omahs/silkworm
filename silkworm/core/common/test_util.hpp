@@ -61,6 +61,24 @@ inline constexpr ChainConfig kShanghaiConfig{
     .shanghai_time = 0,
 };
 
+//! Enables Shanghai from genesis.
+inline constexpr ChainConfig kCancunConfig{
+    .chain_id = 1,
+    .protocol_rule_set = protocol::RuleSetType::kNoProof,
+    .homestead_block = 0,
+    .tangerine_whistle_block = 0,
+    .spurious_dragon_block = 0,
+    .byzantium_block = 0,
+    .constantinople_block = 0,
+    .petersburg_block = 0,
+    .istanbul_block = 0,
+    .berlin_block = 0,
+    .london_block = 0,
+    .terminal_total_difficulty = 0,
+    .shanghai_time = 0,
+    .cancun_time = 0,
+};
+
 static const std::map<std::string, ChainConfig> kNetworkConfig{
     {"Frontier", test::kFrontierConfig},
     {"Homestead",
@@ -287,6 +305,8 @@ static const std::map<std::string, ChainConfig> kNetworkConfig{
          .terminal_total_difficulty = 0,
          .shanghai_time = 15'000,
      }},
+    {"Merge+1153", test::kCancunConfig},
+    {"Cancun", test::kCancunConfig},
 };
 
 std::vector<Transaction> sample_transactions();
