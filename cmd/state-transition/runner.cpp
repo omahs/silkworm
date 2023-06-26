@@ -42,7 +42,7 @@ int main(int argc, char* argv[]) {
 
     CLI11_PARSE(app, argc, argv)
 
-        path = "/home/jacek/dev/silkworm/cmd/state-transition/state_transition_sample2.json";
+    path = "/home/jacek/dev/silkworm/cmd/state-transition/state_transition_sample2.json";
     //    path = "/home/jacek/dev/ethereum-tests/GeneralStateTests/stTransactionTest/ValueOverflow.json";
 
     try {
