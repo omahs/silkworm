@@ -55,6 +55,7 @@ class InMemoryState : public State {
                                                   const evmc::bytes32& block_hash) const noexcept override;
 
     evmc::bytes32 state_root_hash() const override;
+    void print_state_root_hash() const;
 
     uint64_t current_canonical_block() const override;
 

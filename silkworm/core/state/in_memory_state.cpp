@@ -16,6 +16,7 @@
 
 #include "in_memory_state.hpp"
 
+#include <iostream>
 #include <map>
 
 #include <ethash/keccak.hpp>
@@ -258,6 +259,28 @@ evmc::bytes32 InMemoryState::state_root_hash() const {
     }
 
     return hb.root_hash();
+}
+
+void InMemoryState::print_state_root_hash() const {
+    if (accounts_.empty()) {
+        std::cout << "Empty" << std::endl;
+    }
+
+    std::map<evmc::bytes32, Bytes> account_rlp;
+    for (const auto& [address, account] : accounts_) {
+        ethash::hash256 hash{keccak256(address)};
+        evmc::bytes32 storage_root{account_storage_root(address, account.incarnation)};
+        account_rlp[to_bytes32(hash.bytes)] = account.rlp(storage_root);
+        std::cout << to_hex(address) << ":" << account.nonce << ":" << hex(account.balance) << ":" << to_hex(storage_root) << ":" << to_hex(account.code_hash) << std::endl;
+    }
+
+    trie::HashBuilder hb;
+    for (const auto& [hash, rlp] : account_rlp) {
+        hb.add_leaf(trie::unpack_nibbles(hash), rlp);
+    }
+
+    std::cout << "Final Hash: " << to_hex(hb.root_hash()) << std::endl
+              << std::endl;
 }
 
 }  // namespace silkworm

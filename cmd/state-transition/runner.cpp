@@ -20,7 +20,7 @@
 
 #include "state_transition.hpp"
 
-void execute_test(const std::string& path, bool terminate_flag, bool diagnostics_flag);
+void execute_test(const std::string& path, bool terminate_flag, bool diagnostics_flag, const std::string& level);
 using namespace silkworm::cmd::state_transition;
 namespace fs = std::filesystem;
 
@@ -37,17 +37,23 @@ int main(int argc, char* argv[]) {
     bool diagnostics_flag = true;
     app.add_flag("-d,--diagnostics", diagnostics_flag, "Enable extended diagnostics output");
 
+    std::string level = "block";
+    app.add_option("-l,--level", level, "Specify the level");
+
     CLI11_PARSE(app, argc, argv)
+
+        path = "/home/jacek/dev/silkworm/cmd/state-transition/state_transition_sample2.json";
+    //    path = "/home/jacek/dev/ethereum-tests/GeneralStateTests/stTransactionTest/ValueOverflow.json";
 
     try {
         if (std::filesystem::is_directory(path)) {
             for (const auto& test_file : std::filesystem::recursive_directory_iterator(path)) {
                 if (!test_file.is_directory() && test_file.path().extension() == ".json") {
-                    execute_test(test_file.path(), terminate_flag, diagnostics_flag);
+                    execute_test(test_file.path(), terminate_flag, diagnostics_flag, level);
                 }
             }
         } else {
-            execute_test(path, terminate_flag, diagnostics_flag);
+            execute_test(path, terminate_flag, diagnostics_flag, level);
         }
 
     } catch (const std::exception& e) {
@@ -60,10 +66,19 @@ int main(int argc, char* argv[]) {
     }
 }
 
-void execute_test(const std::string& path, bool terminate_flag, bool diagnostics_flag) {
+void execute_test(const std::string& path, bool terminate_flag, bool diagnostics_flag, const std::string& level) {
     std::ifstream input_file(path);
     nlohmann::json baseJson;
     input_file >> baseJson;
     auto stateTransition = StateTransition(baseJson, terminate_flag, diagnostics_flag);
-    stateTransition.run();
+
+    if (level == "process") {
+        stateTransition.run_process();
+    } else if (level == "block") {
+        stateTransition.run_block();
+    } else if (level == "stage") {
+    } else {
+        std::cout << "Invalid level option: " << level << std::endl;
+        throw std::runtime_error("data index out of range");
+    }
 }

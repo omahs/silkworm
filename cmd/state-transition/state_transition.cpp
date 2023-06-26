@@ -101,6 +101,7 @@ Block StateTransition::get_block(InMemoryState& state, ChainConfig& chain_config
     block.header.number = std::stoull(get_env("currentNumber"), nullptr, /*base=*/16);
     block.header.timestamp = std::stoull(get_env("currentTimestamp"), nullptr, /*base=*/16);
     block.header.parent_hash = to_bytes32(from_hex(get_env("previousHash")).value_or(Bytes{}));
+    block.header.receipts_root = kEmptyRoot;
 
     if (contains_env("currentRandom")) {
         block.header.prev_randao = to_bytes32(from_hex(get_env("currentRandom")).value_or(Bytes{}));
@@ -314,7 +315,7 @@ void cleanup_error_block(Block& block, ExecutionProcessor& processor, const evmc
     processor.evm().state().write_to_db(block.header.number);
 }
 
-void StateTransition::run() {
+void StateTransition::run_process() {
     failed_count_ = 0;
     total_count_ = 0;
 
@@ -337,8 +338,8 @@ void StateTransition::run() {
             auto pre_txn_validation = protocol::pre_validate_transaction(txn, rev, config.chain_id, block.header.base_fee_per_gas, block.header.data_gas_price());
             auto txn_validation = processor.validate_transaction(txn);
 
-            // std::cout << "pre: " << std::endl;
-            // state->print_state_root_hash();
+             std::cout << "pre: " << std::endl;
+             state->print_state_root_hash();
 
             if (pre_block_validation == ValidationResult::kOk &&
                 block_validation == ValidationResult::kOk &&
@@ -351,10 +352,53 @@ void StateTransition::run() {
                 receipt.success = false;
             }
 
-            // std::cout << "post: " << std::endl;
-            // state->print_state_root_hash();
+             std::cout << "post: " << std::endl;
+             state->print_state_root_hash();
 
             validate_transition(receipt, expectedState, expectedSubState, *state);
+        }
+    }
+
+    if (show_diagnostics_) {
+        std::cout << "[" << test_name_ << "] "
+                  << "Finished total " << total_count_ << ", failed " << failed_count_ << std::endl
+                  << std::endl;
+    }
+}
+void StateTransition::run_block() {
+    failed_count_ = 0;
+    total_count_ = 0;
+
+    for (auto& expected_state : get_expected_states()) {
+        auto config = expected_state.get_config();
+        for (const auto& expected_sub_state : expected_state.get_sub_states()) {
+            ++total_count_;
+            auto ruleSet = protocol::rule_set_factory(config);
+            auto state = get_state();
+            auto block = get_block(*state, config);
+            auto txn = get_transaction(expected_sub_state);
+
+            block.transactions.emplace_back(txn);
+
+            ExecutionProcessor processor{block, *ruleSet, *state, config};
+
+            std::vector<Receipt> receipts;
+
+            std::cout << "pre: " << std::endl;
+            state->print_state_root_hash();
+
+            auto result = processor.execute_and_write_block(receipts);
+
+            if (result != ValidationResult::kOk) {
+                print_diagnostic_message(expected_state, expected_sub_state, "Failed: Block execution failed");
+            }
+
+            std::cout << "post: " << std::endl;
+            state->print_state_root_hash();
+
+            for (const auto& receipt : receipts) {
+                validate_transition(receipt, expected_state, expected_sub_state, *state);
+            }
         }
     }
 

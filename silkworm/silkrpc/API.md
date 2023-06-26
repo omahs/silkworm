@@ -3,7 +3,7 @@
 The following table shows the current [JSON RPC API](https://eth.wiki/json-rpc/API) implementation status in `Silkrpc`.
 
 | Command                                    | Availability | Notes                                      |
-| :------------------------------------------| :----------: | -----------------------------------------: |
+|:-------------------------------------------| :----------: | -----------------------------------------: |
 | admin_nodeInfo                             | Yes          |                                            |
 | admin_peers                                | Yes          |                                            |
 |                                            |              |                                            |
@@ -66,7 +66,7 @@ The following table shows the current [JSON RPC API](https://eth.wiki/json-rpc/A
 | eth_sign                                   | No           | deprecated                                 |
 | eth_signTransaction                        | -            | deprecated                                 |
 | eth_signTypedData                          | -            | ????                                       |
-|                                            |              |                                            |
+| eth_signTypedData_v4                       |              |                                            |
 | eth_getProof                               | -            | not yet implemented                        |
 |                                            |              |                                            |
 | eth_mining                                 | Yes          |                                            |
